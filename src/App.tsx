@@ -26,6 +26,9 @@ function App() {
   const [isSubmitClicked, setisSubmitClicked] = useState(false)
   const [survey, setSurvey] = useState<Model>();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userHandle, setUserHandle] = useState<string | null>(null);
+  const [userDid, setUserDid] = useState<string | null>(null);
+
   const alertResults = useCallback((sender: any) => {
     console.log("SENDER", sender.data);
     console.log("DATA", sender.getPlainData());
@@ -41,10 +44,13 @@ function App() {
         method: 'GET',
         credentials: 'include'
       });
+      const data = await response.json();
 
       if (response.ok) {
         // Session is valid
         setIsLoggedIn(true);
+        setUserHandle(data.handle); // Assuming the response includes the handle
+        setUserDid(data.did);       // Assuming the response includes the DID
       } else {
         // No valid session found
         setIsLoggedIn(false);
@@ -76,17 +82,16 @@ function App() {
       const response = await fetch("http://127.0.0.1:3333/api/v1/login", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", // Inform the server about the payload format
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          handle: "western-red-cedar.bsky.social", // Send the handle as JSON
+          handle: "western-red-cedar.bsky.social",
         }),
       });
 
       if (response.ok) {
         const { oauthUrl } = await response.json();
         console.log("oauthUrl", oauthUrl);
-        // Redirect the user to the OAuth URL
         window.location.href = oauthUrl;
       } else {
         console.error("Failed to fetch OAuth URL");
@@ -102,17 +107,31 @@ function App() {
     setSurvey(m);
     setisSubmitClicked(true);
   };
-  // return <Survey readonly model={survey} />;
+
+  const headerContent = () => <header style={headerStyle}>
+    <div className="user-info">
+      <p>{userHandle}</p> {/* Display user handle */}
+    </div>
+  </header>;
+  
   if (!isLoggedIn) {
-    // Optionally, show a loading indicator while checking login status
     return <div>
+      {headerContent()}
       <h1>Login Required</h1>
       <button onClick={handleLogin}>Login</button>
     </div>
   }
-  return isSubmitClicked ? <Survey model={survey}/> : <FormBuilder onClickSubmit={onClickSubmit} />;
+  return <div>{headerContent()}{isSubmitClicked ? <Survey model={survey}/> : <FormBuilder onClickSubmit={onClickSubmit} />}</div>;
 }
-
+const headerStyle: React.CSSProperties = {
+  position: 'fixed',
+  top: 10,
+  right: 10,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  color: 'white',
+  padding: '10px',
+  borderRadius: '5px',
+};
 // function saveSurveyResults(url, json) {
 //   fetch(url, {
 //     method: 'POST',
