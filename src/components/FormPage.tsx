@@ -66,7 +66,6 @@ const FormPage = () => {
       surveyModel.mode = 'display';
       surveyModel.showCompletedPage = false;
       surveyModel.onComplete.add((sender) => {
-        console.log("Survey Results:", sender.data);
       });
       setSurvey(surveyModel);
     }

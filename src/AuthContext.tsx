@@ -38,7 +38,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (response.ok) {
         setAuthState({handle: data.handle, did: data.did, isLoggedIn: true}); // Assuming the response includes the user handle and DID
       } else {
-        console.log('Error checking session:');
         setAuthState({did: '', handle: '', isLoggedIn: false});
       }
     } catch (error) {

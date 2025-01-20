@@ -12,7 +12,6 @@ const FormCreate: React.FC<FormCreateProps> = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, description, questions: questions.map(({ id, ...rest }) => rest) }),
     });
-    console.log("Form submitted");
   };
 
   return (

@@ -8,14 +8,12 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
   const { authState } = useAuth();
-    console.log("Auth state:", authState);
   if (authState === null) {
     // Show loading or wait until session check completes
     return <div>Loading...</div>;
   }
 
   if (!authState.isLoggedIn) {
-    console.log("Not logged in, redirecting to login page");
     return <Navigate to="/" replace />;
   }
 

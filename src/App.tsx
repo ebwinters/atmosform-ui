@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link, Routes, Navigate } from 'react-router-dom';
 import { Model } from 'survey-core';
 import Header from './components/Header';
 import LoginView from './components/Login';
@@ -48,7 +48,6 @@ const App: React.FC = () => {
         method: 'GET',
         credentials: 'include'
       });
-      const data = await response.json();
 
       if (response.ok) {
         setIsLoggedIn(true);
@@ -82,6 +81,7 @@ const App: React.FC = () => {
           </>
         ) : (
           <Routes>
+            <Route path="/create-form" element={<Navigate to="/" replace />} />
             <Route path="/" element={<LoginView handleLogin={handleLogin} />} />
           </Routes>
 
