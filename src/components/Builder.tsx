@@ -1,26 +1,22 @@
 import React, { useState } from "react";
 // @ts-ignore
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { StrictModeDroppable } from "./DroppableStrict";
+import { StrictModeDroppable } from "../DroppableStrict";
 import { FaGripVertical } from "react-icons/fa";
+import { Question, QuestionType } from "../dto/Question";
 
-
-export interface Question {
-  id: string;
-  type: string;
-  title: string;
-  options: string[];
-}
 
 export interface FormBuilderProps {
-  onClickSubmit: (questions: Question[]) => void;
+  onClickSubmit: (title: string, questions: Question[], description?: string) => void;
 }
 
 export const FormBuilder = (props: FormBuilderProps) => {
+  const [formTitle, setFormTitle] = useState<string>(""); // Form Title state
+  const [formDescription, setFormDescription] = useState<string>(""); // Form Description state
   const [questions, setQuestions] = useState<Question[]>([]);
 
   // Add a new question (text or multiple choice)
-  const addQuestion = (type: string) => {
+  const addQuestion = (questionType: QuestionType) => {
     if (questions.length >= 10) {
       alert("You can only add up to 10 questions.");
       return;
@@ -29,9 +25,9 @@ export const FormBuilder = (props: FormBuilderProps) => {
       ...questions,
       {
         id: `question-${Date.now()}`,
-        type,
+        questionType,
         title: "",
-        options: type === "multiple-choice" ? ["Option 1", "Option 2"] : [],
+        questionOptions: questionType === "multiplechoice" ? [{text: "Option 1"}, {text: "Option 2"}] : [],
       },
     ]);
   };
@@ -50,8 +46,8 @@ export const FormBuilder = (props: FormBuilderProps) => {
         q.id === questionId
           ? {
               ...q,
-              options: q.options.map((opt, idx) =>
-                idx === optionIndex ? newOption : opt
+              questionOptions: q.questionOptions?.map((opt, idx) =>
+                idx === optionIndex ? {text: newOption } : opt
               ),
             }
           : q
@@ -64,7 +60,13 @@ export const FormBuilder = (props: FormBuilderProps) => {
     setQuestions((prev) =>
       prev.map((q) =>
         q.id === id
-          ? { ...q, options: [...q.options, `Option ${q.options.length + 1}`] }
+          ? {
+              ...q,
+              questionOptions: [
+                ...(q.questionOptions || []),
+                { text: `Option ${(q.questionOptions?.length || 0) + 1}` },
+              ],
+            }
           : q
       )
     );
@@ -77,7 +79,7 @@ export const FormBuilder = (props: FormBuilderProps) => {
         q.id === questionId
           ? {
               ...q,
-              options: q.options.filter((_, idx) => idx !== optionIndex),
+              questionOptions: q.questionOptions?.filter((_, idx) => idx !== optionIndex),
             }
           : q
       )
@@ -101,11 +103,26 @@ export const FormBuilder = (props: FormBuilderProps) => {
   return (
     <div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
       <h2>Form Builder</h2>
+      <div>
+        <input
+          type="text"
+          placeholder="Enter form title"
+          value={formTitle}
+          onChange={(e) => setFormTitle(e.target.value)}
+          style={{ width: "100%", marginBottom: "10px", padding: "5px" }}
+        />
+        <textarea
+          placeholder="Enter form description"
+          value={formDescription}
+          onChange={(e) => setFormDescription(e.target.value)}
+          style={{ width: "100%", marginBottom: "10px", padding: "5px" }}
+        />
+      </div>
 
       {/* Add Question Buttons */}
       <div style={{ marginBottom: "20px" }}>
-        <button onClick={() => addQuestion("text")}>Add Text Question</button>
-        <button onClick={() => addQuestion("multiple-choice")}>
+        <button onClick={() => addQuestion(QuestionType.Text)}>Add Text Question</button>
+        <button onClick={() => addQuestion(QuestionType.MultipleChoice)}>
           Add Multiple Choice Question
         </button>
       </div>
@@ -152,7 +169,7 @@ export const FormBuilder = (props: FormBuilderProps) => {
                           placeholder="Enter question title"
                           value={question.title}
                           onChange={(e) =>
-                            updateQuestionTitle(question.id, e.target.value)
+                            updateQuestionTitle(question.id!, e.target.value)
                           }
                           style={{
                             width: "100%",
@@ -160,9 +177,9 @@ export const FormBuilder = (props: FormBuilderProps) => {
                             padding: "5px",
                           }}
                         />
-                        {question.type === "multiple-choice" && (
+                        {question.questionType === QuestionType.MultipleChoice && (
                           <div>
-                            {question.options.map((option, idx) => (
+                            {question.questionOptions?.map((option, idx) => (
                               <div
                                 key={idx}
                                 style={{
@@ -173,10 +190,10 @@ export const FormBuilder = (props: FormBuilderProps) => {
                               >
                                 <input
                                   type="text"
-                                  value={option}
+                                  value={option.text}
                                   onChange={(e) =>
                                     updateOption(
-                                      question.id,
+                                      question.id!,
                                       idx,
                                       e.target.value
                                     )
@@ -185,7 +202,7 @@ export const FormBuilder = (props: FormBuilderProps) => {
                                 />
                                 <button
                                   onClick={() =>
-                                    removeOption(question.id, idx)
+                                    removeOption(question.id!, idx)
                                   }
                                   style={{
                                     marginLeft: "5px",
@@ -198,7 +215,7 @@ export const FormBuilder = (props: FormBuilderProps) => {
                               </div>
                             ))}
                             <button
-                              onClick={() => addOption(question.id)}
+                              onClick={() => addOption(question.id!)}
                               style={{
                                 marginTop: "10px",
                                 background: "green",
@@ -211,7 +228,7 @@ export const FormBuilder = (props: FormBuilderProps) => {
                           </div>
                         )}
                         <button
-                          onClick={() => removeQuestion(question.id)}
+                          onClick={() => removeQuestion(question.id!)}
                           style={{
                             marginTop: "10px",
                             background: "red",
@@ -234,7 +251,7 @@ export const FormBuilder = (props: FormBuilderProps) => {
 
       {/* Add submit Button */}
       <div style={{ marginTop: "20px" }}>
-        <button onClick={() => props.onClickSubmit(questions)}>submit</button>
+        <button onClick={() => props.onClickSubmit(formTitle, questions, formDescription)}>submit</button>
       </div>
     </div>
   );

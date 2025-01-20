@@ -31,6 +31,9 @@ const FormList: React.FC = () => {
 
   return (
     <div>
+      <Link to="/create-form">
+        <button>Create New Form</button>
+      </Link>
       <h1>Your Forms</h1>
       <div>
         {forms.map((form) => (

@@ -1,12 +1,18 @@
 import React from 'react';
-import FormBuilder from '../Builder';
+import FormBuilder from './Builder';
+import { Question } from '../dto/Question';
 
 interface FormCreateProps {}
 
 const FormCreate: React.FC<FormCreateProps> = () => {
-  const onClickSubmit = (questions: any[]) => {
-    // Logic to create the form (save to backend or state)
-    console.log("Form submitted", questions);
+  const onClickSubmit = async (title: string, questions: Question[], description?: string) => {
+    await fetch(`http://127.0.0.1:3333/api/v1/form`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, description, questions: questions.map(({ id, ...rest }) => rest) }),
+    });
+    console.log("Form submitted");
   };
 
   return (

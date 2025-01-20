@@ -7,42 +7,13 @@ import FormsList from './components/FormList'; // Component to display list of f
 import CreateForm from './components/FormCreate'; // Component for creating a form
 import 'survey-core/defaultV2.min.css';
 import FormPage from './components/FormPage';
+import { AuthProvider, useAuth } from './AuthContext';
+import ProtectedRoute from './ProtectedRoute';
+import FormList from './components/FormList';
 
 const App: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userHandle, setUserHandle] = useState<string | null>(null);
-  const [userDid, setUserDid] = useState<string | null>(null);
 
-  const alertResults = useCallback((sender: any) => {
-    console.log("SENDER", sender.data);
-    console.log("DATA", sender.getPlainData());
-  }, []);
-
-  const checkSession = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:3333/api/v1/check-session', {
-        method: 'GET',
-        credentials: 'include'
-      });
-      const data = await response.json();
-
-      if (response.ok) {
-        setIsLoggedIn(true);
-        setUserHandle(data.handle); // Assuming the response includes the handle
-        setUserDid(data.did);       // Assuming the response includes the DID
-      } else {
-        setIsLoggedIn(false);
-      }
-    } catch (error) {
-      console.error('Error checking session:', error);
-      setIsLoggedIn(false);
-    }
-  };
-
-  useEffect(() => {
-    checkSession();
-  }, []);
-
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const handleLogin = async () => {
     const sid = document.cookie.split("; ").find((row) => row.startsWith("sid="));
 
@@ -71,20 +42,50 @@ const App: React.FC = () => {
     }
   };
 
+  const checkSession = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:3333/api/v1/check-session', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+    } catch (error) {
+      console.error('Error checking session:', error);
+      setIsLoggedIn(false);
+    }
+  };
+
+  useEffect(() => {
+    checkSession();
+  }, []);
+
+
   return (
     <Router>
       <div>
         {isLoggedIn ? (
           <>
-            <Header userHandle={userHandle || 'Unknown'} />
-            <Routes>
-              <Route path="/forms/:id" element={<FormPage />} />
-              <Route path="/create-form" element={<CreateForm />} />
-              <Route path="/"  element={<FormsList />} />
-            </Routes>
+            <AuthProvider>
+              <Header />
+              <Routes>
+                <Route path="/create-form" element={<ProtectedRoute element={<CreateForm />}/>} />
+                <Route path="/forms/:id" element={<ProtectedRoute element={<FormPage />}/>} />
+                <Route path="/" element={<ProtectedRoute element={<FormList />}/>} />
+              </Routes>
+            </AuthProvider>
           </>
         ) : (
-          <LoginView handleLogin={handleLogin} />
+          <Routes>
+            <Route path="/" element={<LoginView handleLogin={handleLogin} />} />
+          </Routes>
+
+
         )}
       </div>
     </Router>
