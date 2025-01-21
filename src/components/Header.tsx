@@ -8,6 +8,8 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MenuIcon from '@mui/icons-material/Menu';
+const AtmosformLogo = require('../logos/logo2.png');
+
 
 const Header: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -39,6 +41,9 @@ const Header: React.FC = () => {
   return (
     <AppBar position="fixed" color="primary">
       <Toolbar>
+        <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>
+          <img src={AtmosformLogo} alt="Atmosform Logo" style={{ height: 24, width: 'auto', marginLeft: 8, marginRight: 12 }} />
+        </Link>
         <Typography variant="h6" sx={{ flexGrow: 1, textAlign: 'left' }}>
           <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>
             ATmosform
