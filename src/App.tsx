@@ -1,19 +1,18 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Link, Routes, Navigate } from 'react-router-dom';
-import { Model } from 'survey-core';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import LoginView from './components/Login';
-import FormsList from './components/FormList'; // Component to display list of forms
 import CreateForm from './components/FormCreate'; // Component for creating a form
 import 'survey-core/defaultV2.min.css';
 import FormPage from './components/FormPage';
-import { AuthProvider, useAuth } from './AuthContext';
+import { AuthProvider } from './AuthContext';
 import ProtectedRoute from './ProtectedRoute';
 import FormList from './components/FormList';
+import { Box, Container, CircularProgress } from '@mui/material';
 
 const App: React.FC = () => {
 
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const handleLogin = async () => {
     const sid = document.cookie.split("; ").find((row) => row.startsWith("sid="));
 
@@ -64,6 +63,17 @@ const App: React.FC = () => {
     checkSession();
   }, []);
 
+  if (isLoggedIn === null) return <Container component="main" maxWidth="xs">
+  <Box
+    sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      p: 3,
+    }}
+  ><CircularProgress /></Box></Container>; // Handle loading state if needed
 
   return (
     <Router>

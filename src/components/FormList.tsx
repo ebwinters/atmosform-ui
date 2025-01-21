@@ -70,7 +70,7 @@ const FormList: React.FC = () => {
                   component={Link}
                   to={`/forms/${form.id}`}
                 >
-                  Open Form
+                  View Form
                 </Button>
               </CardContent>
             </Card>
