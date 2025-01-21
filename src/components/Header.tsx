@@ -1,86 +1,78 @@
-// src/components/Header.tsx
 import React, { useState } from 'react';
 import { useAuth } from '../AuthContext';
-import { Link } from 'react-router-dom';
-
+import { Link, useNavigate } from 'react-router-dom';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import MenuIcon from '@mui/icons-material/Menu';
 
 const Header: React.FC = () => {
-  const headerStyle: React.CSSProperties = {
-    position: 'fixed',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    color: 'white',
-    padding: '10px',
-    borderRadius: '5px',
-    zIndex: 10,
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { authState, setAuthState } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  // Styles for the burger menu and links
-  const menuStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'absolute',
-    top: '50px',
-    right: '10px',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    borderRadius: '10px',
-    padding: '20px',
-    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.5)',
-    zIndex: 10,
+  const handleMenuClose = () => {
+    setAnchorEl(null);
   };
 
-  const linkStyle: React.CSSProperties = {
-    color: 'white',
-    textDecoration: 'none',
-    padding: '10px 20px',
-    borderRadius: '5px',
-    marginBottom: '10px',
-    transition: 'background-color 0.3s, color 0.3s',
+  const handleSignOut = async () => {
+    try {
+      await fetch('http://127.0.0.1:3333/api/v1/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      setAuthState(null);
+      handleMenuClose();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error during sign out:', error);
+    }
   };
-
-  const linkHoverStyle: React.CSSProperties = {
-    ...linkStyle,
-    backgroundColor: '#444',
-  };
-
-
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
-
-  // Toggle menu visibility
-  const toggleMenu = () => setIsMenuOpen((prev: Boolean) => !prev);
-  const { authState } = useAuth();
 
   return (
-    <header style={headerStyle}>
-      <div className="user-info">
-        <p>{authState?.handle}</p>
-      </div>
-      {/* Burger Icon (3 horizontal lines) */}
-      <div onClick={toggleMenu} style={{ cursor: 'pointer' }}>
-        <div style={{ width: '30px', height: '4px', backgroundColor: 'white', margin: '5px 0' }}></div>
-        <div style={{ width: '30px', height: '4px', backgroundColor: 'white', margin: '5px 0' }}></div>
-        <div style={{ width: '30px', height: '4px', backgroundColor: 'white', margin: '5px 0' }}></div>
-      </div>
+    <AppBar position="fixed" color="primary">
+      <Toolbar>
+        <Typography variant="h6" sx={{ flexGrow: 1, textAlign: 'left' }}>
+          <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>
+            ATmosform
+          </Link>
+        </Typography>
 
-      {/* Burger Menu */}
-      {isMenuOpen && (
-        <div style={menuStyle}>
-          <ul style={{ padding: '0', margin: '0' }}>
-            <li>
-              <Link to="/" style={linkStyle}>
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link to="/create-form" style={linkStyle}>
-                Create Form
-              </Link>
-            </li>
-          </ul>
-        </div>
-      )}
-    </header>
+        <Typography variant="body1" sx={{ marginRight: 2 }}>
+          {authState?.handle}
+        </Typography>
+
+        <IconButton
+          edge="end"
+          color="inherit"
+          aria-label="menu"
+          onClick={handleMenuOpen}
+        >
+          <MenuIcon />
+        </IconButton>
+
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          <MenuItem onClick={handleMenuClose} component={Link} to="/">
+            Home
+          </MenuItem>
+          <MenuItem onClick={handleMenuClose} component={Link} to="/create-form">
+            Create Form
+          </MenuItem>
+          <MenuItem onClick={handleSignOut}>Sign Out</MenuItem>
+        </Menu>
+      </Toolbar>
+    </AppBar>
   );
 };
 

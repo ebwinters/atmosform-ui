@@ -4,7 +4,10 @@ import { Form } from '../dto/Form';
 import { Model } from 'survey-core';
 import { Survey } from 'survey-react-ui';
 import { QuestionOption } from '../dto/Question';
+import { Container, Typography, CircularProgress, Alert, Box } from '@mui/material';
+import GlobalLayout from '../GlobalLayout';
 
+// Helper function to create the Survey JSON from the form
 const createSurveyJson = (form: Form) => {
   return {
     elements: form.questions.map((q) => {
@@ -22,14 +25,14 @@ const createSurveyJson = (form: Form) => {
 };
 
 const FormPage = () => {
-  const { id } = useParams(); // This will get the 'id' from the URL
-  const [formData, setFormData] = useState<Form>();
+  const { id } = useParams(); // Get 'id' from the URL
+  const [formData, setFormData] = useState<Form | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [survey, setSurvey] = useState<Model | null>(null);
 
   useEffect(() => {
-    // Fetch the form data based on the id
+    // Fetch the form data based on the ID
     const fetchFormData = async () => {
       try {
         const response = await fetch(`http://127.0.0.1:3333/api/v1/form/${id}`, {
@@ -47,7 +50,7 @@ const FormPage = () => {
           }
           return question;
         });
-        setFormData({...data, questions: parsedQuestions});
+        setFormData({ ...data, questions: parsedQuestions });
         setLoading(false);
       } catch (err: any) {
         setError(err.message);
@@ -58,38 +61,54 @@ const FormPage = () => {
     if (id) {
       fetchFormData();
     }
-  }, [id]); // This will re-run the effect if the 'id' changes
+  }, [id]); // Re-run the effect if 'id' changes
+
   useEffect(() => {
     if (formData) {
       const surveyJson = createSurveyJson(formData);
       const surveyModel = new Model(surveyJson);
       surveyModel.mode = 'display';
       surveyModel.showCompletedPage = false;
-      surveyModel.onComplete.add((sender) => {
+      surveyModel.onComplete.add(() => {
+        // handle onComplete logic here if needed
       });
       setSurvey(surveyModel);
     }
   }, [formData]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <Container maxWidth="sm" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <CircularProgress />
+      </Container>
+    );
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <Container maxWidth="sm" sx={{ marginTop: 4 }}>
+        <Alert severity="error">Error: {error}</Alert>
+      </Container>
+    );
   }
 
   return (
-    <div>
-      <h1>Form Details</h1>
-      {formData && (
-        <div>
-          <h2>{formData.title}</h2>
-          <p>{formData.description}</p>
-          {survey && <Survey model={survey} />}
-        </div>
-      )}
-    </div>
+    <GlobalLayout>
+      <Container maxWidth="sm" sx={{ marginTop: 4 }}>
+        {formData && (
+          <Box>
+            <Typography variant="h4" gutterBottom>
+              {formData.title}
+            </Typography>
+            <Typography variant="body1" paragraph>
+              {formData.description}
+            </Typography>
+            {survey && <Survey model={survey} />}
+          </Box>
+        )}
+      </Container>
+    </GlobalLayout>
+
   );
 };
 

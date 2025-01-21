@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Container,
+} from '@mui/material';
+import GlobalLayout from '../GlobalLayout';
 
 interface Form {
   id: string;
@@ -21,7 +31,7 @@ const FormList: React.FC = () => {
         setForms(data);
       }
     } catch (error) {
-      console.error("Error fetching forms:", error);
+      console.error('Error fetching forms:', error);
     }
   };
 
@@ -30,19 +40,45 @@ const FormList: React.FC = () => {
   }, []);
 
   return (
-    <div>
-      <Link to="/create-form">
-        <button>Create New Form</button>
-      </Link>
-      <h1>Your Forms</h1>
-      <div>
+    <GlobalLayout>
+      <Container sx={{ marginTop: 4 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Typography variant="h4" component="h1">
+          Your Forms
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          component={Link}
+          to="/create-form"
+        >
+          Create New Form
+        </Button>
+      </Box>
+      <Grid container spacing={3}>
         {forms.map((form) => (
-          <div key={form.id}>
-            <Link to={`/forms/${form.id}`}>{form.title}</Link>
-          </div>
+          <Grid item xs={12} sm={6} md={4} key={form.id}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" component="div" gutterBottom>
+                  {form.title}
+                </Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="primary"
+                  component={Link}
+                  to={`/forms/${form.id}`}
+                >
+                  Open Form
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
         ))}
-      </div>
-    </div>
+      </Grid>
+    </Container>
+    </GlobalLayout>
   );
 };
 

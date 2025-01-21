@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthProviderProps {
   children: ReactNode; // Make sure `children` is of type ReactNode
@@ -26,6 +27,7 @@ export type AuthState = { handle: string, did: string, isLoggedIn: boolean };
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [authState, setAuthState] = useState<AuthState | null>(null);
+  const navigate = useNavigate();
 
   const checkSession = async () => {
     try {
@@ -36,13 +38,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const data = await response.json();
 
       if (response.ok) {
-        setAuthState({handle: data.handle, did: data.did, isLoggedIn: true}); // Assuming the response includes the user handle and DID
+        setAuthState({handle: data.handle, did: data.did, isLoggedIn: true});
       } else {
         setAuthState({did: '', handle: '', isLoggedIn: false});
+        navigate('/login');
       }
     } catch (error) {
       console.error('Error checking session:', error);
       setAuthState(null);
+      navigate('/login');
     }
   };
 

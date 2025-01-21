@@ -4,7 +4,7 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { StrictModeDroppable } from "../DroppableStrict";
 import { FaGripVertical } from "react-icons/fa";
 import { Question, QuestionType } from "../dto/Question";
-
+import { Button, TextField, Box, Typography, Container, Paper } from '@mui/material';
 
 export interface FormBuilderProps {
   onClickSubmit: (title: string, questions: Question[], description?: string) => void;
@@ -101,159 +101,135 @@ export const FormBuilder = (props: FormBuilderProps) => {
   };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
-      <h2>Form Builder</h2>
-      <div>
-        <input
-          type="text"
-          placeholder="Enter form title"
+    <Container component="main" maxWidth="sm">
+      <Box sx={{ padding: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Typography variant="h4" gutterBottom>
+          Form Builder
+        </Typography>
+        
+        <TextField
+          label="Enter Form Title"
+          variant="outlined"
           value={formTitle}
           onChange={(e) => setFormTitle(e.target.value)}
-          style={{ width: "100%", marginBottom: "10px", padding: "5px" }}
+          fullWidth
+          sx={{ mb: 2 }}
         />
-        <textarea
-          placeholder="Enter form description"
+
+        <TextField
+          label="Enter Form Description"
+          variant="outlined"
           value={formDescription}
           onChange={(e) => setFormDescription(e.target.value)}
-          style={{ width: "100%", marginBottom: "10px", padding: "5px" }}
+          fullWidth
+          multiline
+          rows={4}
+          sx={{ mb: 3 }}
         />
-      </div>
 
-      {/* Add Question Buttons */}
-      <div style={{ marginBottom: "20px" }}>
-        <button onClick={() => addQuestion(QuestionType.Text)}>Add Text Question</button>
-        <button onClick={() => addQuestion(QuestionType.MultipleChoice)}>
-          Add Multiple Choice Question
-        </button>
-      </div>
+        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+          <Button variant="contained" color="primary" onClick={() => addQuestion(QuestionType.Text)}>
+            Add Text Question
+          </Button>
+          <Button variant="contained" color="secondary" onClick={() => addQuestion(QuestionType.MultipleChoice)}>
+            Add Multiple Choice Question
+          </Button>
+        </Box>
 
-      {/* Drag-and-Drop Context */}
-      <DragDropContext onDragEnd={onDragEnd}>
-        <StrictModeDroppable droppableId="questions">
-          {(provided: any) => (
-            <div {...provided.droppableProps} ref={provided.innerRef}>
-              {questions.map((question, index) => (
-                <Draggable
-                  key={question.id}
-                  draggableId={question.id}
-                  index={index}
-                >
-                  {(provided: any) => (
-                    <div
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      ref={provided.innerRef}
-                      style={{
-                        padding: "10px",
-                        marginBottom: "10px",
-                        border: "1px solid #ccc",
-                        borderRadius: "4px",
-                        background: "#f9f9f9",
-                        ...provided.draggableProps.style,
-                      }}
-                    >
-                      {/* Drag Handle */}
-                      <div
-                          {...provided.dragHandleProps}
-                          style={{
-                            cursor: "grab",
-                            display: "inline-block",
-                            paddingRight: "10px",
-                          }}
-                        >
+        <DragDropContext onDragEnd={onDragEnd}>
+          <StrictModeDroppable droppableId="questions">
+            {(provided: any) => (
+              <div style={{width: '100%'}} {...provided.droppableProps} ref={provided.innerRef}>
+                {questions.map((question, index) => (
+                  <Draggable key={question.id} draggableId={question.id} index={index}>
+                    {(provided: any) => (
+                      <Paper
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        ref={provided.innerRef}
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          padding: 2,
+                          mb: 2,
+                          border: '1px solid #ccc',
+                          borderRadius: 2,
+                          background: '#f9f9f9',
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                           <FaGripVertical />
-                        </div>
-                      <div>
-                        <input
-                          type="text"
-                          placeholder="Enter question title"
-                          value={question.title}
-                          onChange={(e) =>
-                            updateQuestionTitle(question.id!, e.target.value)
-                          }
-                          style={{
-                            width: "100%",
-                            marginBottom: "10px",
-                            padding: "5px",
-                          }}
-                        />
+                          <TextField
+                            label="Enter Question Title"
+                            variant="outlined"
+                            value={question.title}
+                            onChange={(e) => updateQuestionTitle(question.id!, e.target.value)}
+                            fullWidth
+                            sx={{ ml: 2 }}
+                          />
+                        </Box>
+
                         {question.questionType === QuestionType.MultipleChoice && (
-                          <div>
+                          <Box sx={{ mb: 2 }}>
                             {question.questionOptions?.map((option, idx) => (
-                              <div
-                                key={idx}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  marginBottom: "5px",
-                                }}
-                              >
-                                <input
-                                  type="text"
+                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }} key={idx}>
+                                <TextField
+                                  label={`Option ${idx + 1}`}
+                                  variant="outlined"
                                   value={option.text}
                                   onChange={(e) =>
-                                    updateOption(
-                                      question.id!,
-                                      idx,
-                                      e.target.value
-                                    )
+                                    updateOption(question.id!, idx, e.target.value)
                                   }
-                                  style={{ flex: 1, padding: "5px" }}
+                                  fullWidth
+                                  sx={{ mr: 1 }}
                                 />
-                                <button
-                                  onClick={() =>
-                                    removeOption(question.id!, idx)
-                                  }
-                                  style={{
-                                    marginLeft: "5px",
-                                    background: "red",
-                                    color: "white",
-                                  }}
+                                <Button
+                                  variant="contained"
+                                  color="error"
+                                  onClick={() => removeOption(question.id!, idx)}
                                 >
                                   X
-                                </button>
-                              </div>
+                                </Button>
+                              </Box>
                             ))}
-                            <button
+                            <Button
+                              variant="contained"
+                              color="success"
                               onClick={() => addOption(question.id!)}
-                              style={{
-                                marginTop: "10px",
-                                background: "green",
-                                color: "white",
-                                padding: "5px",
-                              }}
                             >
                               Add Option
-                            </button>
-                          </div>
+                            </Button>
+                          </Box>
                         )}
-                        <button
+
+                        <Button
+                          variant="contained"
+                          color="error"
                           onClick={() => removeQuestion(question.id!)}
-                          style={{
-                            marginTop: "10px",
-                            background: "red",
-                            color: "white",
-                            padding: "5px",
-                          }}
                         >
                           Remove Question
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </StrictModeDroppable>
-      </DragDropContext>
+                        </Button>
+                      </Paper>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </StrictModeDroppable>
+        </DragDropContext>
 
-      {/* Add submit Button */}
-      <div style={{ marginTop: "20px" }}>
-        <button onClick={() => props.onClickSubmit(formTitle, questions, formDescription)}>submit</button>
-      </div>
-    </div>
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          onClick={() => props.onClickSubmit(formTitle, questions, formDescription)}
+          sx={{ mt: 3 }}
+        >
+          Submit
+        </Button>
+      </Box>
+    </Container>
   );
 };
 

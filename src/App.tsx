@@ -73,6 +73,7 @@ const App: React.FC = () => {
             <AuthProvider>
               <Header />
               <Routes>
+                <Route path="/login" element={<LoginView handleLogin={handleLogin} />} />
                 <Route path="/create-form" element={<ProtectedRoute element={<CreateForm />}/>} />
                 <Route path="/forms/:id" element={<ProtectedRoute element={<FormPage />}/>} />
                 <Route path="/" element={<ProtectedRoute element={<FormList />}/>} />
@@ -82,10 +83,10 @@ const App: React.FC = () => {
         ) : (
           <Routes>
             <Route path="/create-form" element={<Navigate to="/" replace />} />
+            <Route path="/login" element={<LoginView handleLogin={handleLogin} />} />
             <Route path="/" element={<LoginView handleLogin={handleLogin} />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
-
-
         )}
       </div>
     </Router>
