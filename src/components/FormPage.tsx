@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Form } from '../dto/Form';
 import { Model } from 'survey-core';
 import { Survey } from 'survey-react-ui';
@@ -32,6 +32,7 @@ interface FormPageProps {
 const FormPage = (props: FormPageProps) => {
   const { id } = useParams(); // Get 'id' from the URL
   const [submissionError, setSubmissionError] = useState(false);
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [formData, setFormData] = useState<Form | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -89,7 +90,7 @@ const FormPage = (props: FormPageProps) => {
               body: JSON.stringify({
                 formId: id,
                 answers: data.map((d: IQuestionPlainData) => ({
-                  questionId: d.name,
+                  question: d.name,
                   values: [d.value],
                 })),
               }),
@@ -97,6 +98,7 @@ const FormPage = (props: FormPageProps) => {
             if (!r.ok) {
               throw new Error('Failed to submit form');
             }
+            setSubmissionSuccess(true);
           } catch (err: any) {
             // setError(err.message);
             setSubmissionError(true);
@@ -111,6 +113,29 @@ const FormPage = (props: FormPageProps) => {
   useEffect(() => {
     resetSurveyModel();
   }, [resetSurveyModel]);
+
+  const SuccessComponent = () => (
+    <GlobalLayout>
+      <Container maxWidth="sm" sx={{ marginTop: 4, textAlign: 'center' }}>
+        <Typography variant="h4" gutterBottom>
+          Thank You!
+        </Typography>
+        <Typography variant="body1" paragraph>
+          Your response has been successfully submitted.
+        </Typography>
+        <Link to='/'>
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ marginTop: 2 }}
+          >
+            Go to Homepage
+          </Button></Link>
+
+      </Container>
+    </GlobalLayout>
+  );
+
 
   const ErrorComponent = () => (
     <GlobalLayout>
@@ -147,6 +172,14 @@ const FormPage = (props: FormPageProps) => {
     return (
       <Container maxWidth="sm" sx={{ marginTop: 4 }}>
         <ErrorComponent />
+      </Container>
+    );
+  }
+
+  if (submissionSuccess) {
+    return (
+      <Container maxWidth="sm" sx={{ marginTop: 4 }}>
+        <SuccessComponent />
       </Container>
     );
   }
