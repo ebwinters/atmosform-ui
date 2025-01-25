@@ -68,7 +68,7 @@ const FormList: React.FC = () => {
                   variant="outlined"
                   color="primary"
                   component={Link}
-                  to={`/forms/${form.id}`}
+                  to={`/forms/${form.id}/view`}
                 >
                   View Form
                 </Button>

@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Form } from '../dto/Form';
 import { Model } from 'survey-core';
 import { Survey } from 'survey-react-ui';
 import { QuestionOption } from '../dto/Question';
-import { Container, Typography, CircularProgress, Alert, Box } from '@mui/material';
+import { Container, Typography, CircularProgress, Alert, Box, Button } from '@mui/material';
 import GlobalLayout from '../GlobalLayout';
+import { IQuestionPlainData } from 'survey-core/typings/question';
 
 // Helper function to create the Survey JSON from the form
 const createSurveyJson = (form: Form) => {
@@ -24,8 +25,13 @@ const createSurveyJson = (form: Form) => {
   };
 };
 
-const FormPage = () => {
+interface FormPageProps {
+  readonly?: boolean;
+}
+
+const FormPage = (props: FormPageProps) => {
   const { id } = useParams(); // Get 'id' from the URL
+  const [submissionError, setSubmissionError] = useState(false);
   const [formData, setFormData] = useState<Form | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -63,18 +69,71 @@ const FormPage = () => {
     }
   }, [id]); // Re-run the effect if 'id' changes
 
-  useEffect(() => {
+  const resetSurveyModel = useCallback(() => {
     if (formData) {
       const surveyJson = createSurveyJson(formData);
       const surveyModel = new Model(surveyJson);
-      surveyModel.mode = 'display';
       surveyModel.showCompletedPage = false;
-      surveyModel.onComplete.add(() => {
-        // handle onComplete logic here if needed
+      if (props.readonly) {
+        surveyModel.mode = 'display';
+      }
+      surveyModel.onComplete.add(async () => {
+        const submitForm = async (data: IQuestionPlainData[]) => {
+          try {
+            const r = await fetch('http://127.0.0.1:3333/api/v1/response', {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                formId: id,
+                answers: data.map((d: IQuestionPlainData) => ({
+                  questionId: d.name,
+                  values: [d.value],
+                })),
+              }),
+            })
+            if (!r.ok) {
+              throw new Error('Failed to submit form');
+            }
+          } catch (err: any) {
+            // setError(err.message);
+            setSubmissionError(true);
+          }
+        };
+        await submitForm(surveyModel.getPlainData());
       });
       setSurvey(surveyModel);
     }
-  }, [formData]);
+  }, [formData, id, props.readonly]);
+
+  useEffect(() => {
+    resetSurveyModel();
+  }, [resetSurveyModel]);
+
+  const ErrorComponent = () => (
+    <GlobalLayout>
+      <Container maxWidth="sm" sx={{ marginTop: 4 }}>
+        <Alert severity="error">
+          <Typography variant="h6">Submission Failed</Typography>
+          <Typography>Please try again or contact support if the issue persists.</Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setSubmissionError(false);
+              resetSurveyModel();
+            }}
+            sx={{ marginTop: 2 }}
+          >
+            Retry
+          </Button>
+        </Alert>
+      </Container>
+    </GlobalLayout>
+
+  );
 
   if (loading) {
     return (
@@ -84,10 +143,10 @@ const FormPage = () => {
     );
   }
 
-  if (error) {
+  if (submissionError) {
     return (
       <Container maxWidth="sm" sx={{ marginTop: 4 }}>
-        <Alert severity="error">Error: {error}</Alert>
+        <ErrorComponent />
       </Container>
     );
   }
