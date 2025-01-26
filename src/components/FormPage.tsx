@@ -17,7 +17,7 @@ const createSurveyJson = (form: Form) => {
         title: q.title,
         type: q.questionType === "text" ? "text" : "radiogroup", // Assuming multiple choice for other question types
         isRequired: q.required,
-        choices: q.questionOptions || [], // Optional if it's a multiple choice question
+        choices: q.questionOptions || [], // Optional if it's a multiple choice question,
       };
 
       return question;
@@ -74,6 +74,7 @@ const FormPage = (props: FormPageProps) => {
     if (formData) {
       const surveyJson = createSurveyJson(formData);
       const surveyModel = new Model(surveyJson);
+      // surveyModel.data = {'3lgjnjnghss2h': 'test'};
       surveyModel.showCompletedPage = false;
       if (props.readonly) {
         surveyModel.mode = 'display';
@@ -100,7 +101,6 @@ const FormPage = (props: FormPageProps) => {
             }
             setSubmissionSuccess(true);
           } catch (err: any) {
-            // setError(err.message);
             setSubmissionError(true);
           }
         };

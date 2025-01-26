@@ -86,6 +86,7 @@ const App: React.FC = () => {
                 <Route path="/login" element={<LoginView handleLogin={handleLogin} />} />
                 <Route path="/create-form" element={<ProtectedRoute element={<CreateForm />}/>} />
                 <Route path="/forms/:id/view" element={<ProtectedRoute element={<FormPage readonly={true} />}/>} />
+                <Route path="/forms/:id/responses" element={<ProtectedRoute element={<FormPage readonly={true} />}/>} />
                 <Route path="/forms/:id" element={<ProtectedRoute element={<FormPage />}/>} />
                 <Route path="/" element={<ProtectedRoute element={<FormList />}/>} />
               </Routes>

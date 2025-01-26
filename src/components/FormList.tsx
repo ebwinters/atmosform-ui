@@ -72,6 +72,16 @@ const FormList: React.FC = () => {
                 >
                   View Form
                 </Button>
+                <Button
+                  size="small"
+                  style={{ marginLeft: 8 }}
+                  variant="outlined"
+                  color="secondary"
+                  component={Link}
+                  to={`/forms/${form.id}/responses`}
+                >
+                  View Responses
+                </Button>
               </CardContent>
             </Card>
           </Grid>
