@@ -10,7 +10,7 @@ export enum QuestionType {
 }
 
 export type Question = {
-  id?: string; // `id` is optional when creating a new question
+  id: string; // `id` is optional when creating a new question
   title: string; // Question title
   description?: string; // Optional description for the question
   questionType: QuestionType;
