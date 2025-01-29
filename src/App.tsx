@@ -85,9 +85,9 @@ const App: React.FC = () => {
               <Routes>
                 <Route path="/login" element={<LoginView handleLogin={handleLogin} />} />
                 <Route path="/create-form" element={<ProtectedRoute element={<CreateForm />}/>} />
-                <Route path="/forms/:id/view" element={<ProtectedRoute element={<FormPage readonly={true} />}/>} />
-                <Route path="/forms/:id/responses" element={<ProtectedRoute element={<FormPage readonly={true} />}/>} />
-                <Route path="/forms/:id" element={<ProtectedRoute element={<FormPage />}/>} />
+                <Route path="/forms/:id/view" element={<ProtectedRoute element={<FormPage readonly={true} shouldPopulateResponseData={false} />}/>} />
+                <Route path="/forms/:id/responses" element={<ProtectedRoute element={<FormPage readonly={true} shouldPopulateResponseData={true} />}/>} />
+                <Route path="/forms/:id" element={<ProtectedRoute element={<FormPage readonly={false} shouldPopulateResponseData={false} />}/>} />
                 <Route path="/" element={<ProtectedRoute element={<FormList />}/>} />
               </Routes>
             </AuthProvider>

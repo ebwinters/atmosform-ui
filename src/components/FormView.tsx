@@ -4,9 +4,9 @@ import { Form } from '../dto/Form';
 import { Model } from 'survey-core';
 import { Survey } from 'survey-react-ui';
 import { QuestionOption } from '../dto/Question';
-import { Container, Typography, CircularProgress, Alert, Box, Button } from '@mui/material';
+import { Container, Typography, CircularProgress, Alert, Box, Button, Pagination } from '@mui/material';
 import GlobalLayout from '../GlobalLayout';
-import { Response } from '../dto/Response';
+import { ResponseItem, Answer } from '../dto/Response';
 import { IQuestionPlainData } from 'survey-core/typings/question';
 
 // Helper function to create the Survey JSON from the form
@@ -37,7 +37,7 @@ const FormView = (props: FormViewProps) => {
   const [submissionError, setSubmissionError] = useState(false);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [formData, setFormData] = useState<Form | null>(null);
-  const [responseData, setresponseData] = useState<Response[]>([]);
+  const [responseData, setresponseData] = useState<ResponseItem[]>([]);
   const [responsePage, setResponsePage] = useState<number>(0)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -102,7 +102,7 @@ const FormView = (props: FormViewProps) => {
       if (responseData && responseData.length > responsePage) {
         const surveyModelData: any = {};
         formData.questions.forEach(q => surveyModelData[q.id] = '')
-        responseData[responsePage].answers.forEach(a => surveyModelData[a.questionId] = a.values)
+        responseData[responsePage].answers.forEach((a: Answer) => surveyModelData[a.questionId] = a.values[0])
         surveyModel.data = surveyModelData;
       }
       surveyModel.showCompletedPage = false;
@@ -132,6 +132,7 @@ const FormView = (props: FormViewProps) => {
               }
               setSubmissionSuccess(true);
             } catch (err: any) {
+              console.error('hi');
               setSubmissionError(true);
             }
           };
@@ -164,6 +165,24 @@ const FormView = (props: FormViewProps) => {
             Go to Homepage
           </Button></Link>
 
+      </Container>
+    </GlobalLayout>
+  );
+
+  const NoFormResponseComponent = () => (
+    <GlobalLayout>
+      <Container maxWidth="sm" sx={{ marginTop: 4, textAlign: 'center' }}>
+        <Typography variant="h4" gutterBottom>
+          No form responses at this time.
+        </Typography>
+        <Link to='/'>
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ marginTop: 2 }}
+          >
+            Go to Homepage
+          </Button></Link>
       </Container>
     </GlobalLayout>
   );
@@ -216,11 +235,10 @@ const FormView = (props: FormViewProps) => {
     );
   }
 
-  if (responsePage >= responseData?.length)
-  {
+  if (responseData.length === 0 && shouldPopulateData) {
     return (
       <Container maxWidth="sm" sx={{ marginTop: 4 }}>
-        <ErrorComponent />
+        <NoFormResponseComponent />
       </Container>
     );
   }
@@ -239,7 +257,16 @@ const FormView = (props: FormViewProps) => {
             {survey && <Survey model={survey} />}
           </Box>
         )}
-        <Button disabled={responsePage+1 === responseData.length} onClick={() => setResponsePage(responsePage + 1)}>Next</Button>
+        {shouldPopulateData && responseData.length !== 0 && (
+        <Box display="flex" justifyContent="center" mt={2}>
+          <Pagination
+            count={responseData.length} // Total pages
+            page={responsePage + 1} // Convert zero-based index to one-based
+            onChange={(event, page) => setResponsePage(page - 1)} // Adjust index back
+            color="primary"
+          />
+        </Box>
+      )}
       </Container>
     </GlobalLayout>
 

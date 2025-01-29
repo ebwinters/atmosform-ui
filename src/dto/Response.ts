@@ -1,7 +1,21 @@
-import { Answer } from "./Answer";
+export interface Answer {
+  id: string;
+  questionId: string;
+  values: string[];
+}
 
-export type Response = {
-  id: string; // `id` is optional when creating a new form
-  user: string; // Form title
+export interface ResponseItem {
+  id: string;
+  user: string;
+  formId: string;
+  createdAt: string;
   answers: Answer[];
-};
+}
+
+export interface PaginatedResponse {
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  responses: ResponseItem[];
+}
