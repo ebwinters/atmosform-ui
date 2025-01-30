@@ -10,7 +10,8 @@ import { Answer } from '../dto/Response';
 import { IQuestionPlainData } from 'survey-core/typings/question';
 import { SuccessComponent } from './Success';
 import { ErrorComponent } from './Error';
-import { useResponsesQuery } from '../queries/getResponses';
+import { useResponsesQuery } from '../queries/response';
+import { useSubmitFormResponse } from '../queries/form';
 
 // Helper function to create the Survey JSON from the form
 const createSurveyJson = (form: Form) => {
@@ -37,15 +38,14 @@ interface FormViewProps {
 
 const FormView = (props: FormViewProps) => {
   const { readonly, formId, shouldPopulateData } = props;
-  const [submissionError, setSubmissionError] = useState(false);
-  const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [formData, setFormData] = useState<Form | null>(null);
   const [responseIndex, setResponseIndex] = useState(0);
   const [responsePage, setResponsePage] = useState<number>(1)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [survey, setSurvey] = useState<Model | null>(null);
-
+  
+  const { mutate: submitForm, isSuccess: submissionSuccess, isError: submissionError, reset: resetSubmissionMutation } = useSubmitFormResponse();
   const { data: responseData, error: responseFetchError, isLoading } = useResponsesQuery(formId, responsePage, shouldPopulateData);
 
   const totalResponses = responseData?.total;
@@ -107,37 +107,16 @@ const FormView = (props: FormViewProps) => {
         surveyModel.mode = 'display';
       }
       if (!readonly && !shouldPopulateData) {
-        surveyModel.onComplete.add(async () => {
-          const submitForm = async (data: IQuestionPlainData[]) => {
-            try {
-              const r = await fetch('http://127.0.0.1:3333/api/v1/response', {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  formId,
-                  answers: data.map((d: IQuestionPlainData) => ({
-                    question: d.name,
-                    values: [d.value],
-                  })),
-                }),
-              })
-              if (!r.ok) {
-                throw new Error('Failed to submit form');
-              }
-              setSubmissionSuccess(true);
-            } catch (err: any) {
-              setSubmissionError(true);
-            }
-          };
-          await submitForm(surveyModel.getPlainData());
-        });
+        const handleFormComplete = async () => {
+          const data = surveyModel.getPlainData();
+          await submitForm({ formId, data });
+        };
+    
+        surveyModel.onComplete.add(handleFormComplete);
       }
       setSurvey(surveyModel);
     }
-  }, [responseData, formData, formId, props.readonly, readonly, responseIndex, shouldPopulateData]);
+  }, [formData, shouldPopulateData, responseData, responseIndex, props.readonly, readonly, submitForm, formId]);
 
   useEffect(() => {
     resetSurveyModel();
@@ -171,7 +150,7 @@ const FormView = (props: FormViewProps) => {
 
   if (error || submissionError || responseFetchError) {
     const onClickRetry = () => {
-      setSubmissionError(false);
+      resetSubmissionMutation();
       resetSurveyModel();
     };
 
