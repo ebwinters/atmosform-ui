@@ -8,7 +8,7 @@ interface FormPageProps {
 
 const FormPage = (props: FormPageProps) => {
   const { id } = useParams();
-  return <FormView readonly={props.readonly} formId={id || ''} shouldPopulateData={props.shouldPopulateResponseData} /> 
+  return <FormView readonly={props.readonly} formId={id || ''} shouldPopulateData={props.shouldPopulateResponseData || false} /> 
 };
 
 export default FormPage;
