@@ -9,9 +9,10 @@ import { AuthProvider } from './AuthContext';
 import ProtectedRoute from './ProtectedRoute';
 import FormList from './components/FormList';
 import { Box, Container, CircularProgress } from '@mui/material';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const App: React.FC = () => {
-
+  const queryClient = new QueryClient();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const handleLogin = async () => {
     const sid = document.cookie.split("; ").find((row) => row.startsWith("sid="));
@@ -64,44 +65,46 @@ const App: React.FC = () => {
   }, []);
 
   if (isLoggedIn === null) return <Container component="main" maxWidth="xs">
-  <Box
-    sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      p: 3,
-    }}
-  ><CircularProgress /></Box></Container>; // Handle loading state if needed
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        p: 3,
+      }}
+    ><CircularProgress /></Box></Container>; // Handle loading state if needed
 
   return (
-    <Router>
-      <div>
-        {isLoggedIn ? (
-          <>
-            <AuthProvider>
-              <Header />
-              <Routes>
-                <Route path="/login" element={<LoginView handleLogin={handleLogin} />} />
-                <Route path="/create-form" element={<ProtectedRoute element={<CreateForm />}/>} />
-                <Route path="/forms/:id/view" element={<ProtectedRoute element={<FormPage readonly={true} shouldPopulateResponseData={false} />}/>} />
-                <Route path="/forms/:id/responses" element={<ProtectedRoute element={<FormPage readonly={true} shouldPopulateResponseData={true} />}/>} />
-                <Route path="/forms/:id" element={<ProtectedRoute element={<FormPage readonly={false} shouldPopulateResponseData={false} />}/>} />
-                <Route path="/" element={<ProtectedRoute element={<FormList />}/>} />
-              </Routes>
-            </AuthProvider>
-          </>
-        ) : (
-          <Routes>
-            <Route path="/create-form" element={<Navigate to="/" replace />} />
-            <Route path="/login" element={<LoginView handleLogin={handleLogin} />} />
-            <Route path="/" element={<LoginView handleLogin={handleLogin} />} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
-        )}
-      </div>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <div>
+          {isLoggedIn ? (
+            <>
+              <AuthProvider>
+                <Header />
+                <Routes>
+                  <Route path="/login" element={<LoginView handleLogin={handleLogin} />} />
+                  <Route path="/create-form" element={<ProtectedRoute element={<CreateForm />} />} />
+                  <Route path="/forms/:id/view" element={<ProtectedRoute element={<FormPage readonly={true} shouldPopulateResponseData={false} />} />} />
+                  <Route path="/forms/:id/responses" element={<ProtectedRoute element={<FormPage readonly={true} shouldPopulateResponseData={true} />} />} />
+                  <Route path="/forms/:id" element={<ProtectedRoute element={<FormPage readonly={false} shouldPopulateResponseData={false} />} />} />
+                  <Route path="/" element={<ProtectedRoute element={<FormList />} />} />
+                </Routes>
+              </AuthProvider>
+            </>
+          ) : (
+            <Routes>
+              <Route path="/create-form" element={<Navigate to="/" replace />} />
+              <Route path="/login" element={<LoginView handleLogin={handleLogin} />} />
+              <Route path="/" element={<LoginView handleLogin={handleLogin} />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          )}
+        </div>
+      </Router>
+    </QueryClientProvider>
   );
 }
 

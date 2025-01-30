@@ -6,8 +6,9 @@ import { Survey } from 'survey-react-ui';
 import { QuestionOption } from '../dto/Question';
 import { Container, Typography, CircularProgress, Alert, Box, Button, Pagination } from '@mui/material';
 import GlobalLayout from '../GlobalLayout';
-import { ResponseItem, Answer } from '../dto/Response';
+import { ResponseItem, Answer, PaginatedResponse } from '../dto/Response';
 import { IQuestionPlainData } from 'survey-core/typings/question';
+import { useQuery } from '@tanstack/react-query';
 
 // Helper function to create the Survey JSON from the form
 const createSurveyJson = (form: Form) => {
@@ -37,11 +38,49 @@ const FormView = (props: FormViewProps) => {
   const [submissionError, setSubmissionError] = useState(false);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [formData, setFormData] = useState<Form | null>(null);
-  const [responseData, setresponseData] = useState<ResponseItem[]>([]);
-  const [responsePage, setResponsePage] = useState<number>(0)
+  // const [responseData, setresponseData] = useState<ResponseItem[]>([]);
+  const [responseIndex, setResponseIndex] = useState(0); // Current response in the batch
+  const [responsePage, setResponsePage] = useState<number>(1)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [survey, setSurvey] = useState<Model | null>(null);
+
+  const fetchResponses = async (formId: string, page: number, pageSize: number) => {
+    const response = await fetch(
+      `http://127.0.0.1:3333/api/v1/form/${formId}/responses?page=${page}&pageSize=${pageSize}`, 
+      { credentials: 'include' }
+    );
+    
+    if (!response.ok) throw new Error('Failed to fetch responses');
+  
+    const data = await response.json();
+    return data as PaginatedResponse;
+  };
+
+  const { data, error: responseFetchError, isLoading } = useQuery({
+    queryKey: ['responses', formId, responsePage],
+    queryFn: () => fetchResponses(formId, responsePage, 10),
+    enabled: shouldPopulateData,
+    placeholderData: (prev) => prev,
+  });
+
+  
+
+  const totalResponses = data?.total;
+  const totalFetched = (responsePage - 1) * 10 + (data?.responses.length || 0);
+  const currentResponse = data?.responses[responseIndex];
+  const globalResponseIndex = (responsePage - 1) * 10 + responseIndex;
+
+  // Handle Pagination Change
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, newPage: number) => {
+    const newBatch = Math.ceil(newPage / 10);
+    if (newBatch !== responsePage) {
+      setResponsePage(newBatch);
+      setResponseIndex((newPage - 1) % 10); // Adjust index within batch
+    } else {
+      setResponseIndex((newPage - 1) % 10);
+    }
+  };
 
   useEffect(() => {
     // Fetch the form data based on the ID
@@ -70,39 +109,39 @@ const FormView = (props: FormViewProps) => {
       }
     };
 
-    const fetchResponseData = async () => {
-      try {
-        const response = await fetch(`http://127.0.0.1:3333/api/v1/form/${formId}/responses`, {
-          method: 'GET',
-          credentials: 'include',
-        });
-        if (!response.ok) {
-          throw new Error('Responses not found');
-        }
-        const data = await response.json();
-        setresponseData(data.responses);
-      } catch (err: any) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
+    // const fetchResponseData = async () => {
+    //   try {
+    //     const response = await fetch(`http://127.0.0.1:3333/api/v1/form/${formId}/responses`, {
+    //       method: 'GET',
+    //       credentials: 'include',
+    //     });
+    //     if (!response.ok) {
+    //       throw new Error('Responses not found');
+    //     }
+    //     const data = await response.json();
+    //     setresponseData(data.responses);
+    //   } catch (err: any) {
+    //     setError(err.message);
+    //     setLoading(false);
+    //   }
+    // };
 
     if (formId) {
       fetchFormData();
     }
-    if (shouldPopulateData) {
-      fetchResponseData();
-    }
+    // if (shouldPopulateData) {
+    //   fetchResponseData();
+    // }
   }, [formId, shouldPopulateData]); // Re-run the effect if 'id' changes
 
   const resetSurveyModel = useCallback(() => {
     if (formData) {
       const surveyJson = createSurveyJson(formData);
       const surveyModel = new Model(surveyJson);
-      if (responseData && responseData.length > responsePage) {
+      if (data && data.responses.length > responseIndex) {
         const surveyModelData: any = {};
         formData.questions.forEach(q => surveyModelData[q.id] = '')
-        responseData[responsePage].answers.forEach((a: Answer) => surveyModelData[a.questionId] = a.values[0])
+        data.responses[responseIndex].answers.forEach((a: Answer) => surveyModelData[a.questionId] = a.values[0])
         surveyModel.data = surveyModelData;
       }
       surveyModel.showCompletedPage = false;
@@ -132,7 +171,6 @@ const FormView = (props: FormViewProps) => {
               }
               setSubmissionSuccess(true);
             } catch (err: any) {
-              console.error('hi');
               setSubmissionError(true);
             }
           };
@@ -141,11 +179,17 @@ const FormView = (props: FormViewProps) => {
       }
       setSurvey(surveyModel);
     }
-  }, [formData, formId, props.readonly, readonly, responseData, responsePage, shouldPopulateData]);
+  }, [data, formData, formId, props.readonly, readonly, responseIndex, shouldPopulateData]);
 
   useEffect(() => {
     resetSurveyModel();
   }, [resetSurveyModel]);
+
+  // useEffect(() => {
+  //   if (data) {
+  //     resetSurveyModel();
+  //   }
+  // }, [data, resetSurveyModel]);
 
   const SuccessComponent = () => (
     <GlobalLayout>
@@ -211,7 +255,7 @@ const FormView = (props: FormViewProps) => {
 
   );
 
-  if (loading) {
+  if (loading || isLoading) {
     return (
       <Container maxWidth="sm" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
         <CircularProgress />
@@ -219,7 +263,7 @@ const FormView = (props: FormViewProps) => {
     );
   }
 
-  if (submissionError) {
+  if (submissionError || responseFetchError) {
     return (
       <Container maxWidth="sm" sx={{ marginTop: 4 }}>
         <ErrorComponent />
@@ -235,7 +279,7 @@ const FormView = (props: FormViewProps) => {
     );
   }
 
-  if (responseData.length === 0 && shouldPopulateData) {
+  if (data?.responses.length === 0 && shouldPopulateData) {
     return (
       <Container maxWidth="sm" sx={{ marginTop: 4 }}>
         <NoFormResponseComponent />
@@ -257,14 +301,15 @@ const FormView = (props: FormViewProps) => {
             {survey && <Survey model={survey} />}
           </Box>
         )}
-        {shouldPopulateData && responseData.length !== 0 && (
+        {shouldPopulateData && data?.responses.length !== 0 && (
         <Box display="flex" justifyContent="center" mt={2}>
           <Pagination
-            count={responseData.length} // Total pages
-            page={responsePage + 1} // Convert zero-based index to one-based
-            onChange={(event, page) => setResponsePage(page - 1)} // Adjust index back
-            color="primary"
-          />
+          count={totalResponses} // Total responses = total pages
+          page={globalResponseIndex + 1}
+          onChange={handlePageChange}
+          shape="rounded"
+          size="large"
+        />
         </Box>
       )}
       </Container>
