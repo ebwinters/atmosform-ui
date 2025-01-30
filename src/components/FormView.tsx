@@ -138,7 +138,7 @@ const FormView = (props: FormViewProps) => {
     if (formData) {
       const surveyJson = createSurveyJson(formData);
       const surveyModel = new Model(surveyJson);
-      if (data && data.responses.length > responseIndex) {
+      if (shouldPopulateData && data && data.responses.length > responseIndex) {
         const surveyModelData: any = {};
         formData.questions.forEach(q => surveyModelData[q.id] = '')
         data.responses[responseIndex].answers.forEach((a: Answer) => surveyModelData[a.questionId] = a.values[0])
