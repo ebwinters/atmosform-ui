@@ -1,34 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Form } from '../dto/Form';
 import { Model } from 'survey-core';
 import { Survey } from 'survey-react-ui';
-import { QuestionOption } from '../dto/Question';
 import { Container, Typography, CircularProgress, Box, Button, Pagination } from '@mui/material';
 import GlobalLayout from '../GlobalLayout';
 import { Answer } from '../dto/Response';
-import { IQuestionPlainData } from 'survey-core/typings/question';
 import { SuccessComponent } from './Success';
 import { ErrorComponent } from './Error';
-import { useResponsesQuery } from '../queries/response';
-import { useSubmitFormResponse } from '../queries/form';
-
-// Helper function to create the Survey JSON from the form
-const createSurveyJson = (form: Form) => {
-  return {
-    elements: form.questions.map((q) => {
-      const question = {
-        name: q.id,
-        title: q.title,
-        type: q.questionType === "text" ? "text" : "radiogroup",
-        isRequired: q.required,
-        choices: q.questionOptions || [],
-      };
-
-      return question;
-    }),
-  };
-};
+import { responsePageSize, useResponsesQuery } from '../queries/response';
+import { useFormQuery, useSubmitFormResponse } from '../queries/form';
+import { createSurveyJson } from '../util/surveyUtils';
 
 interface FormViewProps {
   readonly?: boolean;
@@ -38,59 +19,25 @@ interface FormViewProps {
 
 const FormView = (props: FormViewProps) => {
   const { readonly, formId, shouldPopulateData } = props;
-  const [formData, setFormData] = useState<Form | null>(null);
   const [responseIndex, setResponseIndex] = useState(0);
-  const [responsePage, setResponsePage] = useState<number>(1)
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [responsePage, setResponsePage] = useState<number>(1);
   const [survey, setSurvey] = useState<Model | null>(null);
   
   const { mutate: submitForm, isSuccess: submissionSuccess, isError: submissionError, reset: resetSubmissionMutation } = useSubmitFormResponse();
-  const { data: responseData, error: responseFetchError, isLoading } = useResponsesQuery(formId, responsePage, shouldPopulateData);
+  const { data: responseData, error: responseFetchError, isLoading: isResponseLoading } = useResponsesQuery(formId, responsePage, shouldPopulateData);
+  const { data: formData, error: formFetchError, isLoading: isFormLoading } = useFormQuery(formId);
 
   const totalResponses = responseData?.total;
-  const globalResponseIndex = (responsePage - 1) * 10 + responseIndex;
-  // Handle Pagination Change
+  const globalResponseIndex = (responsePage - 1) * responsePageSize + responseIndex;
   const handlePageChange = (_event: React.ChangeEvent<unknown>, newPage: number) => {
-    const newBatch = Math.ceil(newPage / 10);
+    const newBatch = Math.ceil(newPage / responsePageSize);
     if (newBatch !== responsePage) {
       setResponsePage(newBatch);
-      setResponseIndex((newPage - 1) % 10); // Adjust index within batch
+      setResponseIndex((newPage - 1) % responsePageSize);
     } else {
-      setResponseIndex((newPage - 1) % 10);
+      setResponseIndex((newPage - 1) % responsePageSize);
     }
   };
-
-  useEffect(() => {
-    const fetchFormData = async () => {
-      try {
-        const response = await fetch(`http://127.0.0.1:3333/api/v1/form/${formId}`, {
-          method: 'GET',
-          credentials: 'include',
-        });
-        if (!response.ok) {
-          throw new Error('Form not found');
-        }
-        const data = await response.json();
-        const parsedQuestions = data.questions.map((question: any) => {
-          if (typeof question.questionOptions === 'string') {
-            // Parse questionOptions to an array of QuestionOption objects
-            question.questionOptions = JSON.parse(question.questionOptions) as QuestionOption[];
-          }
-          return question;
-        });
-        setFormData({ ...data, questions: parsedQuestions });
-        setLoading(false);
-      } catch (err: any) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
-
-    if (formId) {
-      fetchFormData();
-    }
-  }, [formId, shouldPopulateData]);
 
   const resetSurveyModel = useCallback(() => {
     if (formData) {
@@ -140,7 +87,7 @@ const FormView = (props: FormViewProps) => {
     </GlobalLayout>
   );
 
-  if (loading || isLoading) {
+  if (isFormLoading || isResponseLoading) {
     return (
       <Container maxWidth="sm" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
         <CircularProgress />
@@ -148,7 +95,7 @@ const FormView = (props: FormViewProps) => {
     );
   }
 
-  if (error || submissionError || responseFetchError) {
+  if (formFetchError || submissionError || responseFetchError) {
     const onClickRetry = () => {
       resetSubmissionMutation();
       resetSurveyModel();
@@ -204,7 +151,6 @@ const FormView = (props: FormViewProps) => {
         )}
       </Container>
     </GlobalLayout>
-
   );
 };
 
