@@ -3,14 +3,14 @@ import FormBuilder from './Builder';
 import { Question } from '../dto/Question';
 import { Link, useNavigate } from 'react-router-dom';
 import GlobalLayout from '../GlobalLayout';
-import { Container, Typography, Button, Box, Grid } from '@mui/material';
+import { Container, Typography, Button, Grid } from '@mui/material';
 
 interface FormCreateProps { }
 
 const FormCreate: React.FC<FormCreateProps> = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [formId, setFormId] = useState<string | null>(null); // Store the form ID
-  const navigate = useNavigate(); // For navigating programmatically
+  const [formId, setFormId] = useState<string | null>(null);
+  const navigate = useNavigate(); 
 
   const onClickSubmit = async (title: string, questions: Question[], description?: string) => {
     const response = await fetch(`http://127.0.0.1:3333/api/v1/form`, {
@@ -46,7 +46,7 @@ const FormCreate: React.FC<FormCreateProps> = () => {
             </Grid>
             <Grid item>
               {formId && (
-                <Button variant="outlined" color="primary" component={Link} to={`/forms/${formId}`}>
+                <Button variant="outlined" color="primary" component={Link} to={`/forms/${formId}/view`}>
                   View Submitted Form
                 </Button>
               )}

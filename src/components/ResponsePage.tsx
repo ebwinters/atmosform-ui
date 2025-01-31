@@ -17,10 +17,10 @@ const ResponsePage = (props: FormPageProps) => {
 
   return (
     <GlobalLayout>
-      <Container maxWidth="md" sx={{ marginTop: 4, textAlign: 'center' }}>
+      <Container maxWidth="md" sx={{ marginTop: 4 }}>
         <Tabs value={activeTab} onChange={handleTabChange} centered>
-          <Tab label="Form View" />
-          <Tab label="Other View" />
+          <Tab label="Individual Responses" />
+          <Tab label="Aggregated Responses" />
         </Tabs>
 
         <Box>

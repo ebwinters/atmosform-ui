@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 // @ts-ignore
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext, Draggable } from "react-beautiful-dnd";
 import { StrictModeDroppable } from "../DroppableStrict";
 import { FaGripVertical } from "react-icons/fa";
 import { Question, QuestionType } from "../dto/Question";

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Model } from 'survey-core';
 import { Survey } from 'survey-react-ui';
 import { Container, Typography, CircularProgress, Box, Button, Pagination } from '@mui/material';
-import GlobalLayout from '../GlobalLayout';
 import { Answer } from '../dto/Response';
 import { SuccessComponent } from './Success';
 import { ErrorComponent } from './Error';
