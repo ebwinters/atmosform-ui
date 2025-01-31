@@ -1,3 +1,5 @@
+import { QuestionType } from "./Question";
+
 export interface Answer {
   id: string;
   questionId: string;
@@ -19,3 +21,11 @@ export interface PaginatedResponse {
   totalPages: number;
   responses: ResponseItem[];
 }
+
+export type AggregatedResponseDTO = Record<
+  string,
+  {
+    type: QuestionType;
+    data: string[] | Record<string, number>;
+  }
+>;

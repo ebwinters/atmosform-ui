@@ -10,6 +10,7 @@ import ProtectedRoute from './ProtectedRoute';
 import FormList from './components/FormList';
 import { Box, Container, CircularProgress } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import ResponsePage from './components/ResponsePage';
 
 const App: React.FC = () => {
   const queryClient = new QueryClient();
@@ -88,7 +89,7 @@ const App: React.FC = () => {
                   <Route path="/login" element={<LoginView handleLogin={handleLogin} />} />
                   <Route path="/create-form" element={<ProtectedRoute element={<CreateForm />} />} />
                   <Route path="/forms/:id/view" element={<ProtectedRoute element={<FormPage readonly={true} shouldPopulateResponseData={false} />} />} />
-                  <Route path="/forms/:id/responses" element={<ProtectedRoute element={<FormPage readonly={true} shouldPopulateResponseData={true} />} />} />
+                  <Route path="/forms/:id/responses" element={<ProtectedRoute element={<ResponsePage readonly={true} shouldPopulateResponseData={true} />} />} />
                   <Route path="/forms/:id" element={<ProtectedRoute element={<FormPage readonly={false} shouldPopulateResponseData={false} />} />} />
                   <Route path="/" element={<ProtectedRoute element={<FormList />} />} />
                 </Routes>

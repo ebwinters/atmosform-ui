@@ -22,7 +22,7 @@ const FormView = (props: FormViewProps) => {
   const [responseIndex, setResponseIndex] = useState(0);
   const [responsePage, setResponsePage] = useState<number>(1);
   const [survey, setSurvey] = useState<Model | null>(null);
-  
+
   const { mutate: submitForm, isSuccess: submissionSuccess, isError: submissionError, reset: resetSubmissionMutation } = useSubmitFormResponse();
   const { data: responseData, error: responseFetchError, isLoading: isResponseLoading } = useResponsesQuery(formId, responsePage, shouldPopulateData);
   const { data: formData, error: formFetchError, isLoading: isFormLoading } = useFormQuery(formId);
@@ -58,7 +58,7 @@ const FormView = (props: FormViewProps) => {
           const data = surveyModel.getPlainData();
           await submitForm({ formId, data });
         };
-    
+
         surveyModel.onComplete.add(handleFormComplete);
       }
       setSurvey(surveyModel);
@@ -70,21 +70,19 @@ const FormView = (props: FormViewProps) => {
   }, [resetSurveyModel]);
 
   const NoFormResponseComponent = () => (
-    <GlobalLayout>
-      <Container maxWidth="sm" sx={{ marginTop: 4, textAlign: 'center' }}>
-        <Typography variant="h4" gutterBottom>
-          No form responses at this time.
-        </Typography>
-        <Link to='/'>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ marginTop: 2 }}
-          >
-            Go to Homepage
-          </Button></Link>
-      </Container>
-    </GlobalLayout>
+    <Container>
+      <Typography variant="h4" gutterBottom>
+        No form responses at this time.
+      </Typography>
+      <Link to='/'>
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ marginTop: 2 }}
+        >
+          Go to Homepage
+        </Button></Link>
+    </Container>
   );
 
   if (isFormLoading || isResponseLoading) {
@@ -125,32 +123,30 @@ const FormView = (props: FormViewProps) => {
   }
 
   return (
-    <GlobalLayout>
-      <Container maxWidth="sm" sx={{ marginTop: 4 }}>
-        {formData && (
-          <Box>
-            <Typography variant="h4" gutterBottom>
-              {formData.title}
-            </Typography>
-            <Typography variant="body1" paragraph>
-              {formData.description}
-            </Typography>
-            {survey && <Survey model={survey} />}
-          </Box>
-        )}
-        {shouldPopulateData && responseData?.responses.length !== 0 && (
-          <Box display="flex" justifyContent="center" mt={2}>
-            <Pagination
-              count={totalResponses}
-              page={globalResponseIndex + 1}
-              onChange={handlePageChange}
-              shape="rounded"
-              size="large"
-            />
-          </Box>
-        )}
-      </Container>
-    </GlobalLayout>
+    <div>
+      {formData && (
+        <Box>
+          <Typography variant="h4" gutterBottom>
+            {!shouldPopulateData && formData.title}
+          </Typography>
+          <Typography variant="body1" paragraph>
+            {formData.description}
+          </Typography>
+          {survey && <Survey model={survey} />}
+        </Box>
+      )}
+      {shouldPopulateData && responseData?.responses.length !== 0 && (
+        <Box display="flex" justifyContent="center" mt={2}>
+          <Pagination
+            count={totalResponses}
+            page={globalResponseIndex + 1}
+            onChange={handlePageChange}
+            shape="rounded"
+            size="large"
+          />
+        </Box>
+      )}
+    </div>
   );
 };
 

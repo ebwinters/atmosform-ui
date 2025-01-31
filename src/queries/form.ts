@@ -58,3 +58,21 @@ export const useFormQuery = (formId: string) => {
     placeholderData: (prev) => prev,
   });
 };
+
+export const fetchForms = async () => {
+  const response = await fetch(`http://127.0.0.1:3333/api/v1/forms`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+  if (!response.ok) throw new Error('Failed to fetch forms');
+  const data = await response.json();
+  return data as Form[];
+};
+
+export const useFormsQuery = () => {
+  return useQuery({
+    queryKey: ['forms'],
+    queryFn: () => fetchForms(),
+    placeholderData: (prev) => prev,
+  });
+};

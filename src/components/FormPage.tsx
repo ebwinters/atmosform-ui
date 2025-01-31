@@ -1,14 +1,18 @@
 import { useParams } from 'react-router-dom';
 import FormView from './FormView';
-
-interface FormPageProps {
-  readonly?: boolean;
-  shouldPopulateResponseData?: boolean;
-}
+import { FormPageProps } from '../props/common';
+import GlobalLayout from '../GlobalLayout';
+import { Container } from '@mui/material';
 
 const FormPage = (props: FormPageProps) => {
   const { id } = useParams();
-  return <FormView readonly={props.readonly} formId={id || ''} shouldPopulateData={props.shouldPopulateResponseData || false} /> 
+  return (
+    <GlobalLayout>
+      <Container sx={{ marginTop: 4 }}>
+        <FormView readonly={props.readonly} formId={id || ''} shouldPopulateData={props.shouldPopulateResponseData || false} />
+      </Container>
+    </GlobalLayout>
+  )
 };
 
 export default FormPage;

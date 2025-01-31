@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { PaginatedResponse } from "../dto/Response";
+import { AggregatedResponseDTO, PaginatedResponse } from "../dto/Response";
 
 export const responsePageSize = 10;
 
@@ -21,5 +21,22 @@ export const useResponsesQuery = (formId: string, responsePage: number, shouldPo
     queryFn: () => fetchResponses(formId, responsePage, responsePageSize),
     enabled: shouldPopulateData,
     placeholderData: (prev) => prev,
+  });
+};
+
+const fetchAggregatedResponses = async (formId: string): Promise<AggregatedResponseDTO> => {
+   const response = await fetch(
+    `http://127.0.0.1:3333/api/v1/form/${formId}/responses/aggregated`,
+    { credentials: 'include' }
+  );
+  if (!response.ok) throw new Error('Failed to fetch aggregated responses');
+  const data = await response.json();
+  return data;
+};
+
+export const useAggregatedResponses = (formId: string) => {
+  return useQuery<AggregatedResponseDTO>({
+    queryKey: ["aggregatedResponses", formId],
+    queryFn: () => fetchAggregatedResponses(formId)
   });
 };

@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Box,
@@ -8,36 +7,34 @@ import {
   Typography,
   Grid,
   Container,
+  CircularProgress,
 } from '@mui/material';
 import GlobalLayout from '../GlobalLayout';
-
-interface Form {
-  id: string;
-  title: string;
-}
+import { useFormsQuery } from '../queries/form';
+import { ErrorComponent } from './Error';
 
 const FormList: React.FC = () => {
-  const [forms, setForms] = useState<Form[]>([]);
-
-  const fetchForms = async () => {
-    try {
-      const response = await fetch(`http://127.0.0.1:3333/api/v1/forms`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setForms(data);
-      }
-    } catch (error) {
-      console.error('Error fetching forms:', error);
+  const { data: forms, error: formsFetchError, isLoading, refetch } = useFormsQuery();
+  
+  if (isLoading) {
+      return (
+        <Container maxWidth="sm" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+          <CircularProgress />
+        </Container>
+      );
     }
-  };
-
-  useEffect(() => {
-    fetchForms();
-  }, []);
+  
+    if (formsFetchError) {
+      const onClickRetry = () => {
+        refetch();
+      };
+  
+      return (
+        <Container maxWidth="sm" sx={{ marginTop: 4 }}>
+          <ErrorComponent onClickRetry={onClickRetry} />
+        </Container>
+      );
+    }
 
   return (
     <GlobalLayout>
@@ -56,7 +53,7 @@ const FormList: React.FC = () => {
         </Button>
       </Box>
       <Grid container spacing={3}>
-        {forms.map((form) => (
+        {forms?.map((form) => (
           <Grid item xs={12} sm={6} md={4} key={form.id}>
             <Card>
               <CardContent>
