@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { AggregatedResponseDTO, PaginatedResponse } from "../dto/Response";
+import { baseUrl } from "./common";
 
 export const responsePageSize = 10;
 
 export const fetchResponses = async (formId: string, page: number, pageSize: number): Promise<PaginatedResponse> => {
   const response = await fetch(
-    `http://127.0.0.1:3333/api/v1/form/${formId}/responses?page=${page}&pageSize=${pageSize}`,
+    `${baseUrl}form/${formId}/responses?page=${page}&pageSize=${pageSize}`,
     { credentials: 'include' }
   );
 
@@ -26,7 +27,7 @@ export const useResponsesQuery = (formId: string, responsePage: number, shouldPo
 
 const fetchAggregatedResponses = async (formId: string): Promise<AggregatedResponseDTO> => {
    const response = await fetch(
-    `http://127.0.0.1:3333/api/v1/form/${formId}/responses/aggregated`,
+    `${baseUrl}form/${formId}/responses/aggregated`,
     { credentials: 'include' }
   );
   if (!response.ok) throw new Error('Failed to fetch aggregated responses');

@@ -1,10 +1,11 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { IQuestionPlainData } from 'survey-core/typings/question';
-import { Form } from '../dto/Form';
+import { Form, FormCreate } from '../dto/Form';
 import { QuestionOption } from '../dto/Question';
+import { baseUrl } from './common';
 
 export const submitFormResponse = async (formId: string, data: IQuestionPlainData[]) => {
-  const response = await fetch('http://127.0.0.1:3333/api/v1/response', {
+  const response = await fetch(`${baseUrl}response`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -34,7 +35,7 @@ export const useSubmitFormResponse = () => {
 };
 
 export const fetchFormData = async (formId: string): Promise<Form> => {
-  const response = await fetch(`http://127.0.0.1:3333/api/v1/form/${formId}`, {
+  const response = await fetch(`${baseUrl}form/${formId}`, {
     method: 'GET',
     credentials: 'include',
   });
@@ -60,7 +61,7 @@ export const useFormQuery = (formId: string) => {
 };
 
 export const fetchForms = async () => {
-  const response = await fetch(`http://127.0.0.1:3333/api/v1/forms`, {
+  const response = await fetch(`${baseUrl}forms`, {
     method: 'GET',
     credentials: 'include',
   });
@@ -74,5 +75,30 @@ export const useFormsQuery = () => {
     queryKey: ['forms'],
     queryFn: () => fetchForms(),
     placeholderData: (prev) => prev,
+  });
+};
+
+const createForm = async(form: FormCreate): Promise<Form> =>{
+  const response = await fetch(`${baseUrl}form`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(form),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to create form');
+  }
+
+  const data = await response.json();
+  return data as Form;
+}
+
+export const useCreateForm = () => {
+  return useMutation({
+    mutationFn: (form: FormCreate) =>
+      createForm(form)
   });
 };

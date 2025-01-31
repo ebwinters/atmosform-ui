@@ -8,6 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MenuIcon from '@mui/icons-material/Menu';
+import { useSignOut } from '../queries/auth';
 const AtmosformLogo = require('../logos/logo2.png');
 
 
@@ -24,12 +25,11 @@ const Header: React.FC = () => {
     setAnchorEl(null);
   };
 
+  const { mutate: signOutMutation } = useSignOut();
+
   const handleSignOut = async () => {
     try {
-      await fetch('http://127.0.0.1:3333/api/v1/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      await signOutMutation();
       setAuthState(null);
       handleMenuClose();
       navigate('/login');
@@ -82,3 +82,4 @@ const Header: React.FC = () => {
 };
 
 export default Header;
+

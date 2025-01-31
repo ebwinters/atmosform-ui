@@ -4,31 +4,32 @@ import { Question } from '../dto/Question';
 import { Link, useNavigate } from 'react-router-dom';
 import GlobalLayout from '../GlobalLayout';
 import { Container, Typography, Button, Grid } from '@mui/material';
+import { useCreateForm } from '../queries/form';
+import { ErrorComponent } from './Error';
 
 interface FormCreateProps { }
 
 const FormCreate: React.FC<FormCreateProps> = () => {
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [formId, setFormId] = useState<string | null>(null);
-  const navigate = useNavigate(); 
+  const { mutate: createForm, isSuccess, isError, reset, data } = useCreateForm();
+  const navigate = useNavigate();
 
   const onClickSubmit = async (title: string, questions: Question[], description?: string) => {
-    const response = await fetch(`http://127.0.0.1:3333/api/v1/form`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description, questions: questions.map(({ id, ...rest }) => rest) }),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      setFormId(data.id);
-      setIsSubmitted(true);
-    } else {
-      console.error('Failed to submit form');
-    }
+    await createForm({ title, description, questions: questions.map(({ id, ...rest }) => rest) });
   };
 
-  if (isSubmitted) {
+  if (isError) {
+    const onClickRetry = () => {
+      reset();
+    };
+
+    return (
+      <Container maxWidth="sm" sx={{ marginTop: 4 }}>
+        <ErrorComponent onClickRetry={onClickRetry} />
+      </Container>
+    );
+  }
+
+  if (isSuccess) {
     return (
       <GlobalLayout>
         <Container component="main" maxWidth="sm">
@@ -45,8 +46,8 @@ const FormCreate: React.FC<FormCreateProps> = () => {
               </Button>
             </Grid>
             <Grid item>
-              {formId && (
-                <Button variant="outlined" color="primary" component={Link} to={`/forms/${formId}/view`}>
+              {data && (
+                <Button variant="outlined" color="primary" component={Link} to={`/forms/${data.id}/view`}>
                   View Submitted Form
                 </Button>
               )}

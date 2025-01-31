@@ -9,6 +9,15 @@ export enum QuestionType {
   SelectMany = "selectmany",
 }
 
+export type QuestionCreate = {
+  title: string; // Question title
+  description?: string; // Optional description for the question
+  questionType: QuestionType;
+  questionOptions?: QuestionOption[]; // Optional for questions without options
+  required?: boolean; // Optional field, defaults to false
+  formId?: string; // Optional to allow creating questions before associating them with a form
+};
+
 export type Question = {
   id: string; // `id` is optional when creating a new question
   title: string; // Question title
