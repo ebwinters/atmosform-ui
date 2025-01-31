@@ -3,14 +3,19 @@ import ReactDOM from 'react-dom/client'; // Use `react-dom/client` for React 18+
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Create a root and render the App component
 const rootElement = document.getElementById('root') as HTMLElement;
 const root = ReactDOM.createRoot(rootElement);
+const queryClient = new QueryClient();
 
 root.render(
   <React.StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+
   </React.StrictMode>
 );
 

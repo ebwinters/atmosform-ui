@@ -15,7 +15,7 @@ import ResponsePage from './components/ResponsePage';
 const App: React.FC = () => {
   const queryClient = new QueryClient();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-  const handleLogin = async () => {
+  const handleLogin = async (handle: string) => {
     const sid = document.cookie.split("; ").find((row) => row.startsWith("sid="));
 
     if (sid) {
@@ -29,7 +29,7 @@ const App: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ handle: "western-red-cedar.bsky.social" }),
+        body: JSON.stringify({ handle }),
       });
 
       if (response.ok) {

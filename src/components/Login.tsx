@@ -1,15 +1,28 @@
 import React, { useState } from 'react';
-import { Button, Typography, Container, Box } from '@mui/material';
+import { Button, Typography, Container, Box, FormControl, TextField } from '@mui/material';
+import { useCheckSessionQuery } from '../queries/auth';
 const BlueskyLogo = require('../logos/bskyLogo.png');
 
-const LoginView: React.FC<{ handleLogin: () => void }> = ({ handleLogin }) => {
+const LoginView: React.FC<{ handleLogin: (handle: string) => void }> = ({ handleLogin }) => {
   const [error, setError] = useState('');
+  const { error: checkSessionError, isLoading: isCheckSessionLoading } = useCheckSessionQuery();
 
+  const [handle, setHandle] = useState<string>('');
+
+  if (!isCheckSessionLoading && !checkSessionError) {
+    console.log('hi')
+    //naviage home to /
+    window.location.href = '/';
+  }
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setHandle(event.target.value);
+  };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Perform login logic here (e.g., call `handleLogin` with credentials)
-    handleLogin();
+    if (handle.trim()) {
+      handleLogin(handle);
+    }
   };
 
   return (
@@ -38,13 +51,19 @@ const LoginView: React.FC<{ handleLogin: () => void }> = ({ handleLogin }) => {
           <img src={BlueskyLogo} alt="Bluesky Logo" style={{ height: 24, width: 'auto', marginLeft: 8 }} />
         </Typography>
 
-        {error && (
-          <Typography color="error" variant="body2" sx={{ mb: 2 }}>
-            {error}
-          </Typography>
-        )}
-
         <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+          <FormControl fullWidth margin="normal">
+            <TextField
+              label="Handle"
+              variant="outlined"
+              value={handle}
+              onChange={handleChange}
+              fullWidth
+              error={!!error}
+              helperText={error}
+              autoFocus
+            />
+          </FormControl>
           <Button
             type="submit"
             variant="contained"
