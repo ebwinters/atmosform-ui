@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useCheckSessionQuery } from './queries/auth';
 
 interface AuthProviderProps {
-  children: ReactNode; // Make sure `children` is of type ReactNode
+  children: ReactNode; 
 }
 
 type AuthContextType = {
   authState: AuthState | null;
   setAuthState: React.Dispatch<React.SetStateAction<AuthState | null>>;
-} | null; // Allow the context to be `null` or the correct type
+} | null;
 
-const AuthContext = createContext<AuthContextType>(null); // Set the default value to `null`
+const AuthContext = createContext<AuthContextType>(null);
 
 
 export const useAuth = () => {

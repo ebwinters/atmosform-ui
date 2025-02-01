@@ -11,11 +11,10 @@ export interface FormBuilderProps {
 }
 
 export const FormBuilder = (props: FormBuilderProps) => {
-  const [formTitle, setFormTitle] = useState<string>(""); // Form Title state
-  const [formDescription, setFormDescription] = useState<string>(""); // Form Description state
+  const [formTitle, setFormTitle] = useState<string>(""); 
+  const [formDescription, setFormDescription] = useState<string>("");
   const [questions, setQuestions] = useState<Question[]>([]);
 
-  // Add a new question (text or multiple choice)
   const addQuestion = (questionType: QuestionType) => {
     if (questions.length >= 10) {
       alert("You can only add up to 10 questions.");
@@ -32,14 +31,12 @@ export const FormBuilder = (props: FormBuilderProps) => {
     ]);
   };
 
-  // Update the title of a question
   const updateQuestionTitle = (id: string, newTitle: string) => {
     setQuestions((prev) =>
       prev.map((q) => (q.id === id ? { ...q, title: newTitle } : q))
     );
   };
 
-  // Update options for multiple-choice questions
   const updateOption = (questionId: string, optionIndex: number, newOption: string) => {
     setQuestions((prev) =>
       prev.map((q) =>
@@ -55,7 +52,6 @@ export const FormBuilder = (props: FormBuilderProps) => {
     );
   };
 
-  // Add a new option to a multiple-choice question
   const addOption = (id: string) => {
     setQuestions((prev) =>
       prev.map((q) =>
@@ -72,7 +68,6 @@ export const FormBuilder = (props: FormBuilderProps) => {
     );
   };
 
-  // Remove an option from a multiple-choice question
   const removeOption = (questionId: string, optionIndex: number) => {
     setQuestions((prev) =>
       prev.map((q) =>
@@ -86,14 +81,12 @@ export const FormBuilder = (props: FormBuilderProps) => {
     );
   };
 
-  // Remove a question
   const removeQuestion = (id: string) => {
     setQuestions((prev) => prev.filter((q) => q.id !== id));
   };
 
-  // Reorder questions using drag-and-drop
   const onDragEnd = (result: any) => {
-    if (!result.destination) return; // Dropped outside the list
+    if (!result.destination) return;
     const reorderedQuestions = Array.from(questions);
     const [removed] = reorderedQuestions.splice(result.source.index, 1);
     reorderedQuestions.splice(result.destination.index, 0, removed);

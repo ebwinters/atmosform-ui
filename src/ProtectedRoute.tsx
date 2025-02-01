@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from './AuthContext'; // Or your own auth logic
+import { useAuth } from './AuthContext';
 
 interface ProtectedRouteProps {
   element: React.ReactNode;
@@ -9,7 +9,6 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
   const { authState } = useAuth();
   if (authState === null) {
-    // Show loading or wait until session check completes
     return <div>Loading...</div>;
   }
 
