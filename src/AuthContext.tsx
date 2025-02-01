@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCheckSessionQuery } from './queries/auth';
 
 interface AuthProviderProps {
   children: ReactNode; // Make sure `children` is of type ReactNode
@@ -29,34 +30,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [authState, setAuthState] = useState<AuthState | null>(null);
   const navigate = useNavigate();
 
-  const checkSession = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:3333/api/v1/check-session', {
-        method: 'GET',
-        credentials: 'include'
-      });
-      const data = await response.json();
-
-      if (response.ok) {
-        setAuthState({handle: data.handle, did: data.did, isLoggedIn: true});
-      } else {
-        setAuthState({did: '', handle: '', isLoggedIn: false});
-        navigate('/login');
-      }
-    } catch (error) {
-      console.error('Error checking session:', error);
-      setAuthState(null);
-      navigate('/login');
-    }
-  };
+  const { data, error } = useCheckSessionQuery();
 
   useEffect(() => {
-    // Check session on component mount
-    const checkSessionFunc = async () => {
-      await checkSession();
-    };
-    checkSessionFunc();
-  }, []);
+    if (data) {
+      setAuthState({ handle: data.handle, did: data.did, isLoggedIn: true });
+    } else {
+      setAuthState({ did: '', handle: '', isLoggedIn: false });
+      navigate('/login');
+    }
+  }, [data, error, navigate]);
 
   return (
     <AuthContext.Provider value={{ authState, setAuthState }}>

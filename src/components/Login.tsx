@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Typography, Container, Box, FormControl, TextField } from '@mui/material';
-import { useCheckSessionQuery } from '../queries/auth';
+import { useCheckSessionQuery, useLoginMutation } from '../queries/auth';
 const BlueskyLogo = require('../logos/bskyLogo.png');
 
-const LoginView: React.FC<{ handleLogin: (handle: string) => void }> = ({ handleLogin }) => {
+
+const LoginView: React.FC = () => {
   const [error, setError] = useState('');
+  const { mutate: handleLogin } = useLoginMutation();
   const { error: checkSessionError, isLoading: isCheckSessionLoading } = useCheckSessionQuery();
 
   const [handle, setHandle] = useState<string>('');
 
-  if (!isCheckSessionLoading && !checkSessionError) {
-    console.log('hi')
-    //naviage home to /
-    window.location.href = '/';
-  }
+  
+
+  useEffect(() => {
+    if (!isCheckSessionLoading && !checkSessionError) {
+      window.location.href = '/';
+    }
+  }, [isCheckSessionLoading, checkSessionError]);
+
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setHandle(event.target.value);

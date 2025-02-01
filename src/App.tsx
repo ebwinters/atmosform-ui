@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import LoginView from './components/Login';
@@ -11,61 +11,13 @@ import FormList from './components/FormList';
 import { Box, Container, CircularProgress } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ResponsePage from './components/ResponsePage';
+import { useCheckSessionQuery } from './queries/auth';
 
 const App: React.FC = () => {
   const queryClient = new QueryClient();
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-  const handleLogin = async (handle: string) => {
-    const sid = document.cookie.split("; ").find((row) => row.startsWith("sid="));
+  const { error: checkSessionError, isLoading: isCheckSessionLoading } = useCheckSessionQuery();
 
-    if (sid) {
-      setIsLoggedIn(true);
-      return;
-    }
-
-    try {
-      const response = await fetch("http://127.0.0.1:3333/api/v1/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ handle }),
-      });
-
-      if (response.ok) {
-        const { oauthUrl } = await response.json();
-        window.location.href = oauthUrl;
-      } else {
-        console.error("Failed to fetch OAuth URL");
-      }
-    } catch (error) {
-      console.error("Error during login:", error);
-    }
-  };
-
-  const checkSession = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:3333/api/v1/check-session', {
-        method: 'GET',
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        setIsLoggedIn(true);
-      } else {
-        setIsLoggedIn(false);
-      }
-    } catch (error) {
-      console.error('Error checking session:', error);
-      setIsLoggedIn(false);
-    }
-  };
-
-  useEffect(() => {
-    checkSession();
-  }, []);
-
-  if (isLoggedIn === null) return <Container component="main" maxWidth="xs">
+  if (isCheckSessionLoading) return <Container component="main" maxWidth="xs">
     <Box
       sx={{
         display: 'flex',
@@ -75,18 +27,21 @@ const App: React.FC = () => {
         minHeight: '100vh',
         p: 3,
       }}
-    ><CircularProgress /></Box></Container>; // Handle loading state if needed
+    >
+      <CircularProgress />
+    </Box>
+  </Container>;
 
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
         <div>
-          {isLoggedIn ? (
+          {!checkSessionError ? (
             <>
               <AuthProvider>
                 <Header />
                 <Routes>
-                  <Route path="/login" element={<LoginView handleLogin={handleLogin} />} />
+                  <Route path="/login" element={<LoginView />} />
                   <Route path="/create-form" element={<ProtectedRoute element={<CreateForm />} />} />
                   <Route path="/forms/:id/view" element={<ProtectedRoute element={<FormPage readonly={true} shouldPopulateResponseData={false} />} />} />
                   <Route path="/forms/:id/responses" element={<ProtectedRoute element={<ResponsePage readonly={true} shouldPopulateResponseData={true} />} />} />
@@ -98,8 +53,8 @@ const App: React.FC = () => {
           ) : (
             <Routes>
               <Route path="/create-form" element={<Navigate to="/" replace />} />
-              <Route path="/login" element={<LoginView handleLogin={handleLogin} />} />
-              <Route path="/" element={<LoginView handleLogin={handleLogin} />} />
+              <Route path="/login" element={<LoginView />} />
+              <Route path="/" element={<LoginView />} />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           )}
